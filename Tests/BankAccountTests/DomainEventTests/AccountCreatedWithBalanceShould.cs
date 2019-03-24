@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace Tests.BankAccountTests.DomainEvents
+namespace Tests.BankAccountTests.DomainEventTests
 {
     [TestFixture]
     public class AccountCreatedWithBalanceShould

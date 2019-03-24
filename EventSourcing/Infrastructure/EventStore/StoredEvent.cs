@@ -12,6 +12,19 @@ namespace EventSourcing.Infrastructure.EventStore
 
         public StoredEvent(Guid eventStreamId, DomainEvent @event, long lastStoredEventVersion)
         {
+            if (default(Guid) == eventStreamId)
+            {
+                throw new InvalidOperationException($"{nameof(eventStreamId)} should be initialized.");
+            }
+            if (@event == null)
+            {
+                throw new ArgumentNullException(nameof(@event));
+            }
+            if (lastStoredEventVersion <= 0)
+            {
+                throw new InvalidOperationException($"{nameof(lastStoredEventVersion)} should not be negative or zero");
+            }
+
             Id = Guid.NewGuid();
             Event = @event;
             Version = lastStoredEventVersion;

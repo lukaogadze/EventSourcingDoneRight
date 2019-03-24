@@ -4,27 +4,17 @@ using Rafaela.DDD;
 
 namespace EventSourcing.Domain.BankAccount
 {
-    public class Balance : ValueObject
+    public sealed class Balance : ValueObject
     {
-        public static Balance Empty => new Balance(0m);
-        private const decimal OverdraftLimit = -500;
+        public static Balance Empty => new Balance(0.00m);
+        public const decimal OverdraftLimit = -500.00m;
         public decimal Value { get; }
 
         private Balance(decimal amount)
         {
             Value = amount;
         }
-
-        public Balance Deposit(Money amount)
-        {
-            return new Balance(amount.Value + this.Value);
-        }
-
-        public static Balance Create(Money amount)
-        {
-            return new Balance(amount.Value);
-        }
-
+        
         public static Balance Create(decimal amount)
         {
             if (amount % 0.01m != 0)
@@ -33,10 +23,20 @@ namespace EventSourcing.Domain.BankAccount
             if (amount < OverdraftLimit)
             {
                 throw new InvalidOperationException("Amount cannot be lesser than Overdraft Limit");
-            }
+            }            
             
             return new Balance(amount);
         }
+        
+        public static Balance Create(Money amount)
+        {
+            return new Balance(amount.Value);
+        } 
+
+        public Balance Deposit(Money amount)
+        {
+            return new Balance(amount.Value + this.Value);
+        }               
 
         public Balance Withdraw(Money amount)
         {

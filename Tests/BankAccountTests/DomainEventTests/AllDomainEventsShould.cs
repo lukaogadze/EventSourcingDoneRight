@@ -3,7 +3,7 @@ using EventSourcing.Domain.BankAccount;
 using EventSourcing.Domain.BankAccount.DomainEvents;
 using NUnit.Framework;
 
-namespace Tests.BankAccountTests.DomainEvents
+namespace Tests.BankAccountTests.DomainEventTests
 {
     [TestFixture]
     public class AllDomainEventsShould
