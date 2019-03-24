@@ -158,7 +158,7 @@ namespace Tests.InMemoryTests
             });            
             
             Assert.AreEqual(Balance.Create(new Money(100)), reconstructedAccount.Balance);
-            Assert.AreEqual(2, reconstructedAccount.Changes.Count);
+            Assert.AreEqual(0, reconstructedAccount.Changes.Count);
             Assert.AreEqual(reconstructedAccount.DomainEventVersion, reconstructedAccount.StoredEventVersion);
         }
     }

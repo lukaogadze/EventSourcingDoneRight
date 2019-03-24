@@ -20,7 +20,7 @@ namespace EventSourcing.Domain.BankAccount
             Balance = Balance.Create(bankAccountSnapshot.Balance);
             foreach (DomainEvent @event in storedDomainEvents)
             {
-                Causes(@event);
+                Apply(@event);
                 StoredEventVersion++;
             }
         }

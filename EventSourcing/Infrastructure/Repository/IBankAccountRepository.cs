@@ -1,4 +1,4 @@
-namespace EventSourcing.Persistence.Repository
+namespace EventSourcing.Infrastructure.Repository
 {
     public interface IBankAccountRepository
     {

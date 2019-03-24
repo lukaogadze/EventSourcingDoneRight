@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using EventSourcing.Domain;
 using Rafaela.Functional;
 
-namespace EventSourcing.Persistence.EventStore
+namespace EventSourcing.Infrastructure.EventStore
 {
     public interface IAppendOnlyStore
     {

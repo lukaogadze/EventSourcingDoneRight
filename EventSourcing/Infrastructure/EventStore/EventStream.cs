@@ -1,7 +1,7 @@
 using System;
 using EventSourcing.Domain;
 
-namespace EventSourcing.Persistence.EventStore
+namespace EventSourcing.Infrastructure.EventStore
 {
     public class EventStream
     {
