@@ -44,15 +44,6 @@ namespace Tests.EventSourcingTests.InfrastructureTests
             Assert.AreEqual(0, eventStream.LastStoredEventVersion);
         }
 
-        [Test]
-        public void Throw_InvalidOperationException_On_RegisterEvent_If_EventStreamId_Has_Default_Value()
-        {
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                var eventStream = new EventStream(Guid.NewGuid());
-                var storedEvent = eventStream.RegisterStoredEvent(Guid.Empty, null);
-            });
-        }
 
         [Test]
         public void Throw_ArgumentNullException_On_RegisterEvent_If_DomainEvent_Is_Null()
@@ -60,7 +51,7 @@ namespace Tests.EventSourcingTests.InfrastructureTests
             Assert.Throws<ArgumentNullException>(() =>
             {
                 var eventStream = new EventStream(Guid.NewGuid());
-                var storedEvent = eventStream.RegisterStoredEvent(Guid.NewGuid(), null);
+                var storedEvent = eventStream.RegisterStoredEvent(null);
             });
         }
 
@@ -68,7 +59,7 @@ namespace Tests.EventSourcingTests.InfrastructureTests
         public void RegisterEvent()
         {
             var eventStream = new EventStream(Guid.NewGuid());
-            var storedEvent = eventStream.RegisterStoredEvent(Guid.NewGuid(), new DepositedMoney(new Money(10m)));
+            var storedEvent = eventStream.RegisterStoredEvent(new DepositedMoney(new Money(10m)));
 
             Assert.IsNotNull(storedEvent);
             Assert.AreEqual(1, eventStream.LastStoredEventVersion);

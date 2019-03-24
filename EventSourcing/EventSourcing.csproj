@@ -8,6 +8,7 @@
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
     <PackageReference Include="Rafaela.DDD" Version="1.0.0" />
     <PackageReference Include="Rafaela.Functional" Version="1.0.0" />
+    <PackageReference Include="RavenDB.Client" Version="4.1.4" />
   </ItemGroup>
 
   <ItemGroup>

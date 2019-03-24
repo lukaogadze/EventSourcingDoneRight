@@ -18,19 +18,15 @@ namespace EventSourcing.Infrastructure.EventStore
             AggregateId = aggregateId;            
         }
 
-        public StoredEvent RegisterStoredEvent(Guid eventStreamId, DomainEvent domainEvent)
+        public StoredEvent RegisterStoredEvent(DomainEvent domainEvent)
         {
-            if (eventStreamId == default(Guid))
-            {
-                throw new InvalidOperationException($"{nameof(eventStreamId)} must be initialized");
-            }
             if (domainEvent == null)
             {
                 throw new ArgumentNullException(nameof(domainEvent));
             }
 
             LastStoredEventVersion++;
-            return new StoredEvent(eventStreamId, domainEvent, LastStoredEventVersion);
+            return new StoredEvent(Id, domainEvent, LastStoredEventVersion);
         }
     }
 }
