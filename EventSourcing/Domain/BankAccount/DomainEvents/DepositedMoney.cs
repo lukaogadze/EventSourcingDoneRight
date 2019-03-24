@@ -1,5 +1,3 @@
-using System;
-
 namespace EventSourcing.Domain.BankAccount.DomainEvents
 {
     public class DepositedMoney : DomainEvent
