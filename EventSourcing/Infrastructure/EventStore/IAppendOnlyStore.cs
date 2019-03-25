@@ -7,10 +7,10 @@ namespace EventSourcing.Infrastructure.EventStore
 {
     public interface IAppendOnlyStore
     {
-        void AppendToStream(string eventStreamId, IEnumerable<DomainEvent> domainEvents, Option<int> expectedVersion);
+        bool AppendToStream(string eventStreamId, IEnumerable<DomainEvent> domainEvents, Option<int> expectedVersion);
         void CreateStream(string eventStreamId, Guid aggregateId, IEnumerable<DomainEvent> domainEvents);        
         Option<IEnumerable<StoredEvent>> GetStoredEvents(string eventStreamId, int afterVersion, int maxCount);
-        void AddSnapshot<T>(string eventStreamId, T snapshot);
+        bool AddSnapshot<T>(string eventStreamId, T snapshot);
         Option<T> GetLatestSnapshot<T>(string eventStreamId) where T : class;        
     }
 }

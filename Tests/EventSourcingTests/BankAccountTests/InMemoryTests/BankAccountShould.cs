@@ -18,8 +18,8 @@ namespace Tests.EventSourcingTests.BankAccountTests.InMemoryTests
             var actual1 = bankAccount1.StoredEventVersion;
             var actual2 = bankAccount2.StoredEventVersion;
 
-            Assert.AreEqual(default(long), actual1);
-            Assert.AreEqual(default(long), actual2);
+            Assert.AreEqual(default(int), actual1);
+            Assert.AreEqual(default(int), actual2);
         }
 
         [Test]

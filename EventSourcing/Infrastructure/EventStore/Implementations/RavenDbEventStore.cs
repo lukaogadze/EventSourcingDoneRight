@@ -16,20 +16,27 @@ namespace EventSourcing.Infrastructure.EventStore.Implementations
         {
             _documentSession = documentSession;
         }
-        public void AppendToStream(string eventStreamId, IEnumerable<DomainEvent> domainEvents, Option<int> expectedVersion)
+        public bool AppendToStream(string eventStreamId, IEnumerable<DomainEvent> domainEvents, Option<int> expectedVersion)
         {
-            var stream = _documentSession.Load<EventStream>(eventStreamId);
+            var eventStream = _documentSession.Load<EventStream>(eventStreamId);
+
+            if (eventStream == null)
+            {
+                return false;
+            }
 
             if (expectedVersion.IsSome)
             {
-                CheckForConcurrency(expectedVersion.Value, stream.LastStoredEventVersion);
+                CheckForConcurrency(expectedVersion.Value, eventStream.LastStoredEventVersion);
             }
 
             foreach (DomainEvent @event in domainEvents)
             {
-                var storedEvent = stream.RegisterStoredEvent(@event);
+                var storedEvent = eventStream.RegisterStoredEvent(@event);
                 _documentSession.Store(storedEvent);
             }
+
+            return true;
         }
 
         private void CheckForConcurrency(int expectedVersion, int lastStoredEventVersion)
@@ -52,12 +59,10 @@ namespace EventSourcing.Infrastructure.EventStore.Implementations
 
         public Option<IEnumerable<StoredEvent>> GetStoredEvents(string eventStreamId, int afterVersion, int maxCount)
         {
-            var stream = _documentSession
-                .Query<EventStream>()
-                .Customize(x => x.WaitForNonStaleResults())
-                .FirstOrDefault(x => x.Id == eventStreamId);
+            var eventStream = _documentSession.Load<EventStream>(eventStreamId);
+                
 
-            if (stream == null)
+            if (eventStream == null)
             {
                 return Option.None<IEnumerable<StoredEvent>>();
             }
@@ -71,10 +76,20 @@ namespace EventSourcing.Infrastructure.EventStore.Implementations
             return Option.Some(storedEvents);
         }
 
-        public void AddSnapshot<T>(string eventStreamId, T snapshot)
+        public bool AddSnapshot<T>(string eventStreamId, T snapshot)
         {
-            var storedSnapshot = new StoredSnapshot(eventStreamId, snapshot);
-            _documentSession.Store(storedSnapshot, storedSnapshot.Id.ToString());
+            var eventStream = _documentSession.Load<EventStream>(eventStreamId);
+
+            if (eventStream == null)
+            {
+                return false;
+            }
+            
+            var storedSnapshot = new StoredSnapshot(eventStream.Id, snapshot);
+            
+            
+            _documentSession.Store(storedSnapshot);
+            return true;
         }
 
         public Option<T> GetLatestSnapshot<T>(string eventStreamId) where T : class

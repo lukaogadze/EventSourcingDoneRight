@@ -1,3 +1,5 @@
+using EventSourcing.Domain.BankAccount;
+using EventSourcing.Domain.BankAccount.DomainEvents;
 using NUnit.Framework;
 
 namespace Tests.BankAccountTests.DomainEventTests
@@ -6,9 +8,14 @@ namespace Tests.BankAccountTests.DomainEventTests
     public class AccountCreatedWithBalanceShould
     {
         [Test]
-        public void Initialize_Balance_With_Empty_Balance()
+        public void Initialize_Balance()
         {
+            var balance = Balance.Create(123m);
+            var accountCreatedWithBalance = new AccountCreatedWithBalance(balance);
+
+            var actual = accountCreatedWithBalance.Balance;
             
+            Assert.AreEqual(balance, actual);
         }
     }
 }
