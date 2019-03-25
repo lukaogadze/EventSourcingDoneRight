@@ -5,11 +5,11 @@ namespace EventSourcing.Domain.BankAccount
     public class BankAccountSnapshot
     {
         public Guid Id { get; }
-        public long Version { get; }
+        public int Version { get; }
         public decimal Balance { get; }
         public Guid AggregateId { get; }
 
-        public BankAccountSnapshot(long version, decimal balance, Guid aggregateId)
+        public BankAccountSnapshot(int version, decimal balance, Guid aggregateId)
         {
             Id = Guid.NewGuid();
             if (version <= 0)

@@ -5,30 +5,27 @@ namespace EventSourcing.Infrastructure.EventStore
 {
     public class StoredEvent
     {
-        public Guid Id { get; }
-        public DomainEvent Event { get; }
-        public long Version { get; }
-        public Guid EventStreamId { get;  }
-
-        public StoredEvent(Guid eventStreamId, DomainEvent @event, long lastStoredEventVersion)
+        public StoredEvent()
         {
-            if (default(Guid) == eventStreamId)
-            {
-                throw new InvalidOperationException($"{nameof(eventStreamId)} should be initialized.");
-            }
-            if (@event == null)
-            {
-                throw new ArgumentNullException(nameof(@event));
-            }
+            
+        }
+        public string Id { get; private set; }
+        public DomainEvent Event { get; private set; }
+        public int Version { get; private set; }
+        public string EventStreamId { get; private set; }
+
+        public StoredEvent(string eventStreamId, DomainEvent @event, int lastStoredEventVersion)
+        {
+            EventStreamId = eventStreamId ?? throw new ArgumentNullException(nameof(eventStreamId));
             if (lastStoredEventVersion <= 0)
             {
                 throw new InvalidOperationException($"{nameof(lastStoredEventVersion)} should not be negative or zero");
             }
 
-            Id = Guid.NewGuid();
-            Event = @event;
+            Id = Guid.NewGuid().ToString();
+            Event = @event ?? throw new ArgumentNullException(nameof(@event));
             Version = lastStoredEventVersion;
-            EventStreamId = eventStreamId;
+            
         }
     }
 }

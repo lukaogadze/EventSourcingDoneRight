@@ -25,6 +25,15 @@ namespace EventSourcing.Domain.BankAccount
             }
         }
 
+        private BankAccount(Guid id, IEnumerable<DomainEvent> storedDomainEvents) : base(id)
+        {
+            foreach (DomainEvent @event in storedDomainEvents)
+            {
+                Apply(@event);
+                StoredEventVersion++;
+            }
+        }
+
         private BankAccount(Guid id, Balance balance) : base(id)
         {
             Causes(new AccountCreatedWithBalance(balance));
@@ -44,6 +53,13 @@ namespace EventSourcing.Domain.BankAccount
             IEnumerable<DomainEvent> storedDomainEvents)
         {
             return new BankAccount(bankAccountSnapshot, storedDomainEvents);
+        }
+        
+        public static BankAccount ReconstructBankAccount(Guid bankAccountId, IEnumerable<DomainEvent> storedDomainEvents)
+        {
+            BankAccount bankAccount = new BankAccount(bankAccountId, storedDomainEvents);
+
+            return bankAccount;
         }
         
         public BankAccountSnapshot Snapshot() => new BankAccountSnapshot(DomainEventVersion, Balance.Value, Id);  

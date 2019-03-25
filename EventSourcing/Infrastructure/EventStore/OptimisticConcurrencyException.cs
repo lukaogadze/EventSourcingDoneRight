@@ -1,6 +1,6 @@
 using System;
 
-namespace EventSourcing.Infrastructure.EventStore.Implementations
+namespace EventSourcing.Infrastructure.EventStore
 {
     public class OptimisticConcurrencyException : Exception
     {

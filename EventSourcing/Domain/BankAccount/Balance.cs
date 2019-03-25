@@ -35,7 +35,7 @@ namespace EventSourcing.Domain.BankAccount
 
         public Balance Deposit(Money amount)
         {
-            return new Balance(amount.Value + this.Value);
+            return new Balance(amount.Value + Value);
         }               
 
         public Balance Withdraw(Money amount)
@@ -43,7 +43,7 @@ namespace EventSourcing.Domain.BankAccount
             
             if (MoneyCanBeWithdrawn(amount))
             {
-                var amountLeft = this.Value - amount.Value;
+                var amountLeft = Value - amount.Value;
                 return new Balance(amountLeft);
             }
             throw new InvalidOperationException("exceed overdraft limit");
@@ -51,7 +51,7 @@ namespace EventSourcing.Domain.BankAccount
 
         public bool MoneyCanBeWithdrawn(Money money)
         {
-            var amountLeft = this.Value - money.Value;
+            var amountLeft = Value - money.Value;
             return amountLeft >= OverdraftLimit;
         }
 

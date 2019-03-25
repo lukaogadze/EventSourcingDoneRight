@@ -12,11 +12,20 @@ namespace Tests.EventSourcingTests.InfrastructureTests
     public class EventStreamShould
     {
         [Test]
-        public void Initialize_Identity()
+        public void Throw_ArgumentNullException_On_Initialization_If_EventStreamId_Is_Null()
         {
-            var eventStream = new EventStream(Guid.NewGuid());
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                var eventStream = new EventStream(null, Guid.Empty);
+            });
+        }
+        
+        [Test]
+        public void Initialize_Identity()
+        {            
+            var eventStream = new EventStream("", Guid.NewGuid());
 
-            Assert.AreNotEqual(default(Guid), eventStream.Id);
+            Assert.IsNotNull(eventStream.Id);
         }
 
         [Test]
@@ -24,14 +33,14 @@ namespace Tests.EventSourcingTests.InfrastructureTests
         {
             Assert.Throws<InvalidOperationException>(() =>
             {
-                var eventStream = new EventStream(Guid.Empty);
+                var eventStream = new EventStream("",Guid.Empty);
             });
         }
 
         [Test]
         public void Initialize_AggregateId()
         {
-            var eventStream = new EventStream(Guid.NewGuid());
+            var eventStream = new EventStream("", Guid.NewGuid());
 
             Assert.AreNotEqual(default(Guid), eventStream.AggregateId);
         }
@@ -39,7 +48,7 @@ namespace Tests.EventSourcingTests.InfrastructureTests
         [Test]
         public void Initialize_LastStoredEventVersion()
         {
-            var eventStream = new EventStream(Guid.NewGuid());
+            var eventStream = new EventStream("", Guid.NewGuid());
 
             Assert.AreEqual(0, eventStream.LastStoredEventVersion);
         }
@@ -50,7 +59,7 @@ namespace Tests.EventSourcingTests.InfrastructureTests
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
-                var eventStream = new EventStream(Guid.NewGuid());
+                var eventStream = new EventStream("", Guid.NewGuid());
                 var storedEvent = eventStream.RegisterStoredEvent(null);
             });
         }
@@ -58,7 +67,7 @@ namespace Tests.EventSourcingTests.InfrastructureTests
         [Test]
         public void RegisterEvent()
         {
-            var eventStream = new EventStream(Guid.NewGuid());
+            var eventStream = new EventStream("", Guid.NewGuid());
             var storedEvent = eventStream.RegisterStoredEvent(new DepositedMoney(new Money(10m)));
 
             Assert.IsNotNull(storedEvent);

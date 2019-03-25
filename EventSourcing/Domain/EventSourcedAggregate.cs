@@ -8,8 +8,8 @@ namespace EventSourcing.Domain
     {
         protected abstract void Apply(DomainEvent @event);
         public List<DomainEvent> Changes { get;}
-        public long DomainEventVersion { get; protected set; }
-        public long StoredEventVersion { get; set; }
+        public int DomainEventVersion { get; protected set; }
+        public int StoredEventVersion { get; set; }
         
         protected EventSourcedAggregate(Guid id) : base(id)
         {

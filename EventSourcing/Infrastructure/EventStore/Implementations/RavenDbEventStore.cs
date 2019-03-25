@@ -8,7 +8,7 @@ using Raven.Client.Documents.Session;
 
 namespace EventSourcing.Infrastructure.EventStore.Implementations
 {
-    public class RavenDbEventStore : IAppendOnlyStore
+    public class RavenDbEventStore  : IAppendOnlyStore
     {
         private readonly IDocumentSession _documentSession;
 
@@ -16,9 +16,9 @@ namespace EventSourcing.Infrastructure.EventStore.Implementations
         {
             _documentSession = documentSession;
         }
-        public void Append(Guid eventStreamId, IEnumerable<DomainEvent> domainEvents, Option<int> expectedVersion)
+        public void AppendToStream(string eventStreamId, IEnumerable<DomainEvent> domainEvents, Option<int> expectedVersion)
         {
-            var stream = _documentSession.Load<EventStream>(eventStreamId.ToString());
+            var stream = _documentSession.Load<EventStream>(eventStreamId);
 
             if (expectedVersion.IsSome)
             {
@@ -28,26 +28,29 @@ namespace EventSourcing.Infrastructure.EventStore.Implementations
             foreach (DomainEvent @event in domainEvents)
             {
                 var storedEvent = stream.RegisterStoredEvent(@event);
-                _documentSession.Store(storedEvent, storedEvent.Id.ToString());
+                _documentSession.Store(storedEvent);
             }
         }
 
-        private void CheckForConcurrency(long expectedVersion, long lastStoredEventVersion)
+        private void CheckForConcurrency(int expectedVersion, int lastStoredEventVersion)
         {
             if (lastStoredEventVersion == expectedVersion) return;
             var error = $"Expected: {expectedVersion}. Found: {lastStoredEventVersion}";
-            throw new OptimisticConcurrencyException(error);            
+            throw new OptimisticConcurrencyException(error);
+
         }
 
-        public void Create(Guid aggregateId, IEnumerable<DomainEvent> domainEvents)
+        
+        public void CreateStream(string eventStreamId, Guid aggregateId, IEnumerable<DomainEvent> domainEvents)
         {
-            var eventStream = new EventStream(aggregateId);
+            var eventStream = new EventStream(eventStreamId, aggregateId);
             _documentSession.Store(eventStream, eventStream.Id.ToString());
+            _documentSession.SaveChanges();
             
-            Append(eventStream.Id, domainEvents, Option.None<int>());
+            AppendToStream(eventStream.Id, domainEvents, Option.None<int>());
         }
 
-        public Option<IEnumerable<StoredEvent>> GetStoredEvents(Guid eventStreamId, int afterVersion, int maxCount)
+        public Option<IEnumerable<StoredEvent>> GetStoredEvents(string eventStreamId, int afterVersion, int maxCount)
         {
             var stream = _documentSession
                 .Query<EventStream>()
@@ -68,13 +71,13 @@ namespace EventSourcing.Infrastructure.EventStore.Implementations
             return Option.Some(storedEvents);
         }
 
-        public void AddSnapshot<T>(Guid eventStreamId, T snapshot)
+        public void AddSnapshot<T>(string eventStreamId, T snapshot)
         {
             var storedSnapshot = new StoredSnapshot(eventStreamId, snapshot);
             _documentSession.Store(storedSnapshot, storedSnapshot.Id.ToString());
         }
 
-        public Option<T> GetLatestSnapshot<T>(Guid eventStreamId) where T : class
+        public Option<T> GetLatestSnapshot<T>(string eventStreamId) where T : class
         {
             var lastStoredSnapshot = _documentSession.Query<StoredSnapshot>()
                 .Customize(x => x.WaitForNonStaleResults())

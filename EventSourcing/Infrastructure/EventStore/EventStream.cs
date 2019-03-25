@@ -5,12 +5,16 @@ namespace EventSourcing.Infrastructure.EventStore
 {
     public class EventStream
     {
-        public Guid Id { get; }
-        public Guid AggregateId { get; }
-        public long LastStoredEventVersion { get; private set; }    
-        public EventStream(Guid aggregateId)
+        public EventStream()
         {
-            Id = Guid.NewGuid();
+            
+        }
+        public string Id { get; private set; }
+        public Guid AggregateId { get; private set;}
+        public int LastStoredEventVersion { get; private set; }    
+        public EventStream(string eventStreamId, Guid aggregateId)
+        {
+            Id = eventStreamId ?? throw new ArgumentNullException(nameof(eventStreamId));            
             if (default(Guid) == aggregateId)
             {
                 throw new InvalidOperationException($"{nameof(aggregateId)} must be initialized");

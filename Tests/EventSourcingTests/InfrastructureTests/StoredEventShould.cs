@@ -12,11 +12,11 @@ namespace Tests.EventSourcingTests.InfrastructureTests
     public class StoredEventShould
     {
         [Test]
-        public void Throw_InvalidOperationException_On_Initialization_If_EventStreamId_Is_Default_Value()
+        public void Throw_ArgumentNullException_On_Initialization_If_EventStreamId_Is_Null()
         {
-            Assert.Throws<InvalidOperationException>(() =>
+            Assert.Throws<ArgumentNullException>(() =>
             {
-                StoredEvent storedEvent = new StoredEvent(Guid.Empty, null, 0);
+                StoredEvent storedEvent = new StoredEvent(null, null, 0);
             });
         }
 
@@ -25,7 +25,7 @@ namespace Tests.EventSourcingTests.InfrastructureTests
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
-                StoredEvent storedEvent = new StoredEvent(Guid.NewGuid(), null, 0);
+                StoredEvent storedEvent = new StoredEvent(Guid.NewGuid().ToString(), null, 1);
             });
         }
 
@@ -34,28 +34,28 @@ namespace Tests.EventSourcingTests.InfrastructureTests
         {
             Assert.Throws<InvalidOperationException>(() =>
             {
-                StoredEvent storedEvent = new StoredEvent(Guid.NewGuid(), new DepositedMoney(new Money(123m)), 0);
+                StoredEvent storedEvent = new StoredEvent(Guid.NewGuid().ToString(), new DepositedMoney(new Money(123m)), 0);
             });
 
             Assert.Throws<InvalidOperationException>(() =>
             {
-                StoredEvent storedEvent = new StoredEvent(Guid.NewGuid(), new DepositedMoney(new Money(123m)), -1);
+                StoredEvent storedEvent = new StoredEvent(Guid.NewGuid().ToString(), new DepositedMoney(new Money(123m)), -1);
             });
         }
 
         [Test]
         public void Initialize_Identity()
         {
-            var storedEvent = new StoredEvent(Guid.NewGuid(), new DepositedMoney(new Money(123m)), 1);
+            var storedEvent = new StoredEvent(Guid.NewGuid().ToString(), new DepositedMoney(new Money(123m)), 1);
 
-            Assert.AreNotEqual(default(Guid), storedEvent.Id);
+            Assert.IsNotNull(storedEvent.Id);
         }
 
         [Test]
         public void Initialize_DomainEvent()
         {
             var @event = new DepositedMoney(new Money(123m));
-            var storedEvent = new StoredEvent(Guid.NewGuid(), @event, 1);
+            var storedEvent = new StoredEvent(Guid.NewGuid().ToString(), @event, 1);
 
             Assert.AreEqual(@event, storedEvent.Event);
         }
@@ -64,7 +64,7 @@ namespace Tests.EventSourcingTests.InfrastructureTests
         public void Initialize_Version()
         {
             var @event = new DepositedMoney(new Money(123m));
-            var storedEvent = new StoredEvent(Guid.NewGuid(), @event, 1);
+            var storedEvent = new StoredEvent(Guid.NewGuid().ToString(), @event, 1);
 
             Assert.AreEqual(1, storedEvent.Version);
         }
@@ -74,9 +74,9 @@ namespace Tests.EventSourcingTests.InfrastructureTests
         {
             var @event = new DepositedMoney(new Money(123m));
             var guid = Guid.NewGuid();
-            var storedEvent = new StoredEvent(guid, @event, 1);
+            var storedEvent = new StoredEvent(guid.ToString(), @event, 1);
 
-            Assert.AreEqual(guid, storedEvent.EventStreamId);
+            Assert.AreEqual(guid.ToString(), storedEvent.EventStreamId);
         }
     }
 }

@@ -12,8 +12,8 @@ namespace Tests.EventSourcingTests.BankAccountTests.InMemoryTests
         [Test]
         public void Have_Zero_As_StoredEventVersion_After_Initialization()
         {
-            EventSourcing.Domain.BankAccount.BankAccount bankAccount1 = EventSourcing.Domain.BankAccount.BankAccount.CreateEmptyBankAccount();
-            EventSourcing.Domain.BankAccount.BankAccount bankAccount2 = EventSourcing.Domain.BankAccount.BankAccount.CreateBankAccountWithBalance(Balance.Create(123));
+            var bankAccount1 = BankAccount.CreateEmptyBankAccount();
+            var bankAccount2 = BankAccount.CreateBankAccountWithBalance(Balance.Create(123));
 
             var actual1 = bankAccount1.StoredEventVersion;
             var actual2 = bankAccount2.StoredEventVersion;
@@ -25,8 +25,8 @@ namespace Tests.EventSourcingTests.BankAccountTests.InMemoryTests
         [Test]
         public void Store_Event_For_Every_Mutation()
         {
-            EventSourcing.Domain.BankAccount.BankAccount bankAccountWithBalance = EventSourcing.Domain.BankAccount.BankAccount.CreateBankAccountWithBalance(Balance.Create(123));
-            EventSourcing.Domain.BankAccount.BankAccount bankAccount = EventSourcing.Domain.BankAccount.BankAccount.CreateEmptyBankAccount();
+            var bankAccountWithBalance = BankAccount.CreateBankAccountWithBalance(Balance.Create(123));
+            var bankAccount = BankAccount.CreateEmptyBankAccount();
             bankAccount.Deposit(new Money(1));
             bankAccount.Withdraw(new Money(3));
 
@@ -44,8 +44,8 @@ namespace Tests.EventSourcingTests.BankAccountTests.InMemoryTests
         [Test]
         public void Update_DomainEventVersion_On_Every_Mutation()
         {
-            EventSourcing.Domain.BankAccount.BankAccount bankAccount1 = EventSourcing.Domain.BankAccount.BankAccount.CreateBankAccountWithBalance(Balance.Create(123));
-            EventSourcing.Domain.BankAccount.BankAccount bankAccount2 = EventSourcing.Domain.BankAccount.BankAccount.CreateEmptyBankAccount();
+            var bankAccount1 = BankAccount.CreateBankAccountWithBalance(Balance.Create(123));
+            var bankAccount2 = BankAccount.CreateEmptyBankAccount();
             bankAccount2.Deposit(new Money(1));
             bankAccount2.Withdraw(new Money(3));
 
@@ -60,7 +60,7 @@ namespace Tests.EventSourcingTests.BankAccountTests.InMemoryTests
         [Test]
         public void Reconstruct_Itself_From_Snapshot_And_Empty_List_Of_Domain_Events()
         {
-            var bankAccount = EventSourcing.Domain.BankAccount.BankAccount.CreateEmptyBankAccount();
+            var bankAccount = BankAccount.CreateEmptyBankAccount();
             bankAccount.Deposit(new Money(100));
             bankAccount.Deposit(new Money(100));
             bankAccount.Deposit(new Money(100));
@@ -68,7 +68,26 @@ namespace Tests.EventSourcingTests.BankAccountTests.InMemoryTests
 
             var snapshot = bankAccount.Snapshot();
 
-            var reconstructedAccount = EventSourcing.Domain.BankAccount.BankAccount.ReconstructBankAccount(snapshot, new List<DomainEvent>());
+            var reconstructedAccount = BankAccount.ReconstructBankAccount(snapshot, new List<DomainEvent>());
+
+            Assert.AreEqual(bankAccount.Id, reconstructedAccount.Id);
+            Assert.AreEqual(bankAccount.Balance, reconstructedAccount.Balance);
+            Assert.AreEqual(bankAccount.DomainEventVersion, reconstructedAccount.DomainEventVersion);
+            Assert.AreEqual(bankAccount.DomainEventVersion, reconstructedAccount.StoredEventVersion);
+            Assert.AreEqual(0, reconstructedAccount.Changes.Count);
+        }
+        
+        [Test]
+        public void Reconstruct_Itself_From_Id_And_List_Of_Domain_Events()
+        {
+            var bankAccount = BankAccount.CreateEmptyBankAccount();
+            bankAccount.Deposit(new Money(100));
+            bankAccount.Deposit(new Money(100));
+            bankAccount.Deposit(new Money(100));
+                        
+
+
+            var reconstructedAccount = BankAccount.ReconstructBankAccount(bankAccount.Id, bankAccount.Changes);
 
             Assert.AreEqual(bankAccount.Id, reconstructedAccount.Id);
             Assert.AreEqual(bankAccount.Balance, reconstructedAccount.Balance);
@@ -80,7 +99,7 @@ namespace Tests.EventSourcingTests.BankAccountTests.InMemoryTests
         [Test]
         public void Reconstruct_Itself_From_Snapshot_And_Non_Empty_List_Of_Domain_Events()
         {
-            var bankAccount = EventSourcing.Domain.BankAccount.BankAccount.CreateEmptyBankAccount();
+            var bankAccount = BankAccount.CreateEmptyBankAccount();
             bankAccount.Deposit(new Money(100));
             bankAccount.Deposit(new Money(100));
             bankAccount.Deposit(new Money(100));
@@ -88,7 +107,7 @@ namespace Tests.EventSourcingTests.BankAccountTests.InMemoryTests
 
             var snapshot = bankAccount.Snapshot();
 
-            var reconstructedAccount = EventSourcing.Domain.BankAccount.BankAccount.ReconstructBankAccount(snapshot, new List<DomainEvent>
+            var reconstructedAccount = BankAccount.ReconstructBankAccount(snapshot, new List<DomainEvent>
             {
                 new WithdrawnMoney(new Money(100)),
                 new WithdrawnMoney(new Money(100))
