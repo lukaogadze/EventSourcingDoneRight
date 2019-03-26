@@ -1,20 +1,23 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using EventSourcing.Domain.BankAccount.DomainEvents;
 
 namespace EventSourcing.Domain.BankAccount
 {
     public sealed class BankAccount : EventSourcedAggregate
     {
+        public override ReadOnlyCollection<DomainEvent> Changes => new ReadOnlyCollection<DomainEvent>(_changes);
+        private readonly List<DomainEvent> _changes = new List<DomainEvent>();
         public Balance Balance { get; private set; }
    
         private BankAccount(Guid id) : base(id)
-        {
+        {            
             Causes(new AccountCreatedWithEmptyBalance());
         }
 
         private BankAccount(BankAccountSnapshot bankAccountSnapshot, IEnumerable<DomainEvent> storedDomainEvents) : base(bankAccountSnapshot.AggregateId)
-        {
+        {                        
             DomainEventVersion = bankAccountSnapshot.Version;
             StoredEventVersion = bankAccountSnapshot.Version;
             Balance = Balance.Create(bankAccountSnapshot.Balance);
@@ -84,7 +87,7 @@ namespace EventSourcing.Domain.BankAccount
         
         private void Causes(DomainEvent @event)
         {
-            Changes.Add(@event);
+            _changes.Add(@event);
             Apply(@event);
         }
         
@@ -94,9 +97,9 @@ namespace EventSourcing.Domain.BankAccount
         {
             When((dynamic)@event);
             DomainEventVersion++;            
-        }                     
-                
-        
+        }
+
+
         private void When(WithdrawnMoney withdrawnMoney)
         {
             Balance = Balance.Withdraw(withdrawnMoney.Amount);

@@ -60,7 +60,7 @@ namespace EventSourcing.Infrastructure.Repository
         
         
 
-        public void Save(BankAccount bankAccount)
+        public bool Save(BankAccount bankAccount)
         {
             var eventStreamId = GetEventStreamId(bankAccount.Id);
 
@@ -68,13 +68,16 @@ namespace EventSourcing.Infrastructure.Repository
                 ? Option.None<int>() 
                 : Option.Some(bankAccount.StoredEventVersion);
             
-            _appendOnlyStore.AppendToStream(eventStreamId, bankAccount.Changes, expectedVersion);
+            var accountSaved = _appendOnlyStore.AppendToStream(eventStreamId, bankAccount.Changes, expectedVersion);
+            return accountSaved;
         }
 
-        public void SaveSnapshot(BankAccount bankAccount)
+        public bool SaveSnapshot(BankAccount bankAccount)
         {
             var eventStreamId = GetEventStreamId(bankAccount.Id);
-            _appendOnlyStore.AddSnapshot(eventStreamId, bankAccount.Snapshot());
+            var snapshotAdded = _appendOnlyStore.AddSnapshot(eventStreamId, bankAccount.Snapshot());
+            
+            return snapshotAdded;
         }
         
         

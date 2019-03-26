@@ -8,7 +8,7 @@ namespace EventSourcing.Infrastructure.Repository
     {
         Option<BankAccount> FindBy(Guid id);
         void Add(BankAccount bankAccount);
-        void Save(BankAccount bankAccount);
-        void SaveSnapshot(BankAccount bankAccount);
+        bool Save(BankAccount bankAccount);
+        bool SaveSnapshot(BankAccount bankAccount);
     }
 }
