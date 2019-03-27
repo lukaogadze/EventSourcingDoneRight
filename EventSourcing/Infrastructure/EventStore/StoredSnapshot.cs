@@ -4,10 +4,10 @@ namespace EventSourcing.Infrastructure.EventStore
 {
     public class StoredSnapshot
     {
-        public string Id { get; }
-        public string EventStreamId { get; }
-        public object Snapshot { get; }
-        public DateTimeOffset Created { get; }
+        public string Id { get; protected set; }
+        public string EventStreamId { get; protected set; }
+        public object Snapshot { get; protected set; }
+        public DateTimeOffset Created { get; protected set; }
 
         public StoredSnapshot(string eventStreamId, object snapshot)
         {

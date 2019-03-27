@@ -3,8 +3,6 @@ using EventSourcing.Domain.BankAccount.DomainEvents;
 using EventSourcing.Infrastructure.EventStore;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Tests.EventSourcingTests.InfrastructureTests
 {

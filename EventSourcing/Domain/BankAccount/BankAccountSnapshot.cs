@@ -4,10 +4,10 @@ namespace EventSourcing.Domain.BankAccount
 {
     public class BankAccountSnapshot
     {
-        public Guid Id { get; }
-        public int Version { get; }
-        public decimal Balance { get; }
-        public Guid AggregateId { get; }
+        public Guid Id { get; protected set; }
+        public int Version { get; protected set;}
+        public decimal Balance { get; protected set;}
+        public Guid AggregateId { get; protected set; }
 
         public BankAccountSnapshot(int version, decimal balance, Guid aggregateId)
         {

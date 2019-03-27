@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using EventSourcing.Domain;
 using EventSourcing.Domain.BankAccount;
-using EventSourcing.Domain.BankAccount.DomainEvents;
 using NUnit.Framework;
 
 namespace Tests.BankAccountTests

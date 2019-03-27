@@ -9,10 +9,10 @@ namespace EventSourcing.Infrastructure.EventStore
         {
             
         }
-        public string Id { get; private set; }
-        public DomainEvent Event { get; private set; }
-        public int Version { get; private set; }
-        public string EventStreamId { get; private set; }
+        public string Id { get; protected set; }
+        public DomainEvent Event { get; protected set; }
+        public int Version { get; protected set; }
+        public string EventStreamId { get; protected set; }
 
         public StoredEvent(string eventStreamId, DomainEvent @event, int lastStoredEventVersion)
         {

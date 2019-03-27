@@ -1,23 +1,30 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using EventSourcing.Domain;
+using MongoDB.Driver;
 using Rafaela.Functional;
-using Raven.Client.Documents.Session;
 
 namespace EventSourcing.Infrastructure.EventStore.Implementations
 {
-    public class RavenDbEventStore  : IAppendOnlyStore
+    public class MongoDbEventStore : IAppendOnlyStore
     {
-        private readonly IDocumentSession _documentSession;
+        private readonly IMongoCollection<EventStream> _eventStreamCollection;
+        private readonly IMongoCollection<StoredEvent> _storedEventCollection;
+        private readonly IMongoCollection<StoredSnapshot> _storedSnapshotCollection;
 
-        public RavenDbEventStore(IDocumentSession documentSession)
+        public MongoDbEventStore(IMongoCollection<EventStream> eventStreamCollection,
+            IMongoCollection<StoredEvent> storedEventCollection,
+            IMongoCollection<StoredSnapshot> storedSnapshotCollection)
         {
-            _documentSession = documentSession;
+            _eventStreamCollection = eventStreamCollection;
+            _storedEventCollection = storedEventCollection;
+            _storedSnapshotCollection = storedSnapshotCollection;
         }
-        public bool AppendToStream(string eventStreamId, IEnumerable<DomainEvent> domainEvents, Option<int> expectedVersion)
+
+        public bool AppendToStream(string eventStreamId, IEnumerable<DomainEvent> domainEvents,
+            Option<int> expectedVersion)
         {
-            var eventStream = _documentSession.Load<EventStream>(eventStreamId);
+            var eventStream = _eventStreamCollection.Find(x => x.Id == eventStreamId).FirstOrDefault();
 
             if (eventStream == null)
             {
@@ -29,11 +36,16 @@ namespace EventSourcing.Infrastructure.EventStore.Implementations
                 CheckForConcurrency(expectedVersion.Value, eventStream.LastStoredEventVersion);
             }
 
+            var storedEvents = new List<StoredEvent>();
             foreach (DomainEvent @event in domainEvents)
             {
                 var storedEvent = eventStream.RegisterStoredEvent(@event);
-                _documentSession.Store(storedEvent);
+                storedEvents.Add(storedEvent);
             }
+
+            _storedEventCollection.InsertMany(storedEvents);
+
+            _eventStreamCollection.FindOneAndReplace(e => e.Id == eventStream.Id, eventStream);
 
             return true;
         }
@@ -45,59 +57,51 @@ namespace EventSourcing.Infrastructure.EventStore.Implementations
             throw new OptimisticConcurrencyException(error);
         }
 
-        
         public void CreateStream(string eventStreamId, Guid aggregateId, IEnumerable<DomainEvent> domainEvents)
         {
             var eventStream = new EventStream(eventStreamId, aggregateId);
-            _documentSession.Store(eventStream);
-            _documentSession.SaveChanges();
-            
+            _eventStreamCollection.InsertOne(eventStream);
+
             AppendToStream(eventStream.Id, domainEvents, Option.None<int>());
         }
 
         public Option<IEnumerable<StoredEvent>> GetStoredEvents(string eventStreamId, int afterVersion, int maxCount)
         {
-            var eventStream = _documentSession.Load<EventStream>(eventStreamId);
-                
+            var eventStream = _eventStreamCollection.Find(x => x.Id == eventStreamId).FirstOrDefault();
 
             if (eventStream == null)
             {
                 return Option.None<IEnumerable<StoredEvent>>();
             }
 
-            var storedEvents = _documentSession.Query<StoredEvent>()
-                .Customize(x => x.WaitForNonStaleResults())
-                .Where(x => x.EventStreamId == eventStreamId && x.Version > afterVersion)
-                .Take(maxCount)
-                .AsEnumerable();                
+            var storedEvents = _storedEventCollection
+                .Find(x => x.EventStreamId == eventStreamId && x.Version > afterVersion).Limit(maxCount).ToEnumerable();
 
             return Option.Some(storedEvents);
         }
 
         public bool AddSnapshot<T>(string eventStreamId, T snapshot)
         {
-            var eventStream = _documentSession.Load<EventStream>(eventStreamId);
+            var eventStream = _eventStreamCollection.Find(x => x.Id == eventStreamId).FirstOrDefault();
 
             if (eventStream == null)
             {
                 return false;
             }
-            
+
             var storedSnapshot = new StoredSnapshot(eventStream.Id, snapshot);
-            
-            
-            _documentSession.Store(storedSnapshot);
+
+            _storedSnapshotCollection.InsertOne(storedSnapshot);
+
             return true;
         }
 
         public Option<T> GetLatestSnapshot<T>(string eventStreamId) where T : class
         {
-            var lastStoredSnapshot = _documentSession.Query<StoredSnapshot>()
-                .Customize(x => x.WaitForNonStaleResults())
-                .Where(x => x.EventStreamId == eventStreamId)
-                .OrderByDescending(x => x.Created)
+            var sort = new SortDefinitionBuilder<StoredSnapshot>().Descending(l => l.Created);
+            var lastStoredSnapshot = _storedSnapshotCollection.Find(x => x.EventStreamId == eventStreamId).Sort(sort)
                 .FirstOrDefault();
-            
+
             if (lastStoredSnapshot == null)
             {
                 return Option.None<T>();

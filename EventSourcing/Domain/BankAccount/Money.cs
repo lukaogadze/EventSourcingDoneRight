@@ -4,7 +4,7 @@ using Rafaela.DDD;
 
 namespace EventSourcing.Domain.BankAccount
 {
-    public sealed class Money : ValueObject
+    public class Money : ValueObject
     {
         public decimal Value { get; }
 

@@ -4,11 +4,11 @@ using Rafaela.DDD;
 
 namespace EventSourcing.Domain.BankAccount
 {
-    public sealed class Balance : ValueObject
+    public class Balance : ValueObject
     {
         public static Balance Empty => new Balance(0.00m);
         public const decimal OverdraftLimit = -500.00m;
-        public decimal Value { get; }
+        public decimal Value { get; protected set; }
 
         private Balance(decimal amount)
         {

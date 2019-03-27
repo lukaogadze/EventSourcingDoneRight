@@ -5,7 +5,7 @@ using EventSourcing.Domain.BankAccount.DomainEvents;
 
 namespace EventSourcing.Domain.BankAccount
 {
-    public sealed class BankAccount : EventSourcedAggregate
+    public class BankAccount : EventSourcedAggregate
     {
         public override ReadOnlyCollection<DomainEvent> Changes => new ReadOnlyCollection<DomainEvent>(_changes);
         private readonly List<DomainEvent> _changes = new List<DomainEvent>();
